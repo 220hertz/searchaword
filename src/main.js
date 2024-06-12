@@ -461,7 +461,40 @@ function clearCanvas() {
     }
     
     // If all words are found, return true
+    clearInterval(timer);
     return true;
   }
+
+  let timer;
+let seconds = 0;
+let minutes = 0;
+
+function updateTimer() {
+    seconds++;
+    if (seconds === 60) {
+        seconds = 0;
+        minutes++;
+    }
+
+    let formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+    let formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    document.getElementById('timer').innerText = `${formattedMinutes}:${formattedSeconds}`;
+}
+
+function startGame() {
+    // Reset the timer if needed
+    clearInterval(timer);
+    seconds = 0;
+    minutes = 0;
+    document.getElementById('timer').innerText = '00:00';
+    
+    // Start the timer
+    timer = setInterval(updateTimer, 1000);
+
+    // Add additional game start logic here
+}
+document.getElementById('startButton').addEventListener('click', startGame);
+
   });
     
