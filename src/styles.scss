@@ -1,0 +1,17 @@
+$primary-color: #fff;
+
+body {
+  background-color: $primary-color;
+  font-family: Arial, sans-serif;
+}
+
+.canvas-wrapper {
+    margin:auto;
+    max-width:540px;
+    padding:20px;
+}
+
+.found-word {
+    font-weight: 800;
+    color: green; /* Change color to whatever you prefer */
+  }
