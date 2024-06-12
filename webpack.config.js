@@ -7,6 +7,7 @@ module.exports = {
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
+  
     publicPath: '/',
   },
   mode: 'development',
@@ -38,8 +39,8 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html',
-      filename: 'index.html',
+      template: './src/index.html', // Path to your index.html template
+      filename: 'index.html', // Output filename in the dist folder
     }),
     new webpack.ProvidePlugin({
       $: 'jquery',
