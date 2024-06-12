@@ -62,9 +62,15 @@ document.addEventListener('DOMContentLoaded', function () {
           const foundWordItem = document.querySelector(`#clue-${word}`);
           if (foundWordItem) {
             foundWordItem.classList.add('found-word')
+            updatePoints(getPointsForAttempt());
           }
         } else {
           temporaryHighlight(firstClick, secondClick);
+          if (points === 0){
+          }
+          else{
+          updatePoints(-1);
+        }
         }
       
         clearCell(firstClick); // Clear the first click cell
@@ -77,8 +83,14 @@ document.addEventListener('DOMContentLoaded', function () {
           // Execute win condition action
           stopTimer();
           document.getElementById('timer').innerText = "Hey, you did it!"
+          updatePoints(getPointsForCompletion());
         }
       }
+
+      function updatePoints(pointsToAdd) {
+        points += pointsToAdd;
+        document.getElementById('points').innerText = points;
+    }
  
     function getWordFromSelection(start, end) {
         let word = '';
@@ -477,7 +489,8 @@ function clearCanvas() {
   let seconds = 0;
   let minutes = 0;
   let isRunning = false;
-  
+  let points = 0;
+
   function updateTimer() {
       seconds++;
       if (seconds === 60) {
@@ -539,6 +552,27 @@ function clearCanvas() {
   }
   
   document.getElementById('startButton').addEventListener('click', toggleGame);
+
+  function getPointsForAttempt() {
+    if (minutes < 1) return 5;
+    if (minutes < 2) return 4;
+    if (minutes < 3) return 3;
+    if (minutes < 4) return 2;
+    return 1;
+}
+
+function getPointsForCompletion() {
+    if (minutes < 1) return 20;
+    if (minutes < 2) return 15;
+    if (minutes < 3) return 10;
+    if (minutes < 4) return 5;
+    return 0;
+}
+
+function updatePoints(pointsToAdd) {
+    points += pointsToAdd;
+    document.getElementById('points').innerText = points;
+}
 
   });
     

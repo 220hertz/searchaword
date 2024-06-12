@@ -20,3 +20,14 @@ body {
   display: inline-block;
   font-size:2rem;
 }
+
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.row > h4{
+  display:inline;
+}
