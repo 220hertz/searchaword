@@ -84,6 +84,9 @@ document.addEventListener('DOMContentLoaded', function () {
           stopTimer();
           document.getElementById('timer').innerText = "Hey, you did it!"
           updatePoints(getPointsForCompletion());
+          if (points == 120){
+            document.getElementById('timer').innerText = "PERFECT SCORE!"
+          }
         }
       }
 
