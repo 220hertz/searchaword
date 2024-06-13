@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     canvas.addEventListener('click', handleClick);
   
     function handleClick(event) {
+      if(isRunning){
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
         attemptSelection();
       }
     }
+    }
   
     function attemptSelection() {
         if (!firstClick || !secondClick) return;
@@ -60,9 +62,15 @@ document.addEventListener('DOMContentLoaded', function () {
           const foundWordItem = document.querySelector(`#clue-${word}`);
           if (foundWordItem) {
             foundWordItem.classList.add('found-word')
+            updatePoints(getPointsForAttempt());
           }
         } else {
           temporaryHighlight(firstClick, secondClick);
+          if (points === 0){
+          }
+          else{
+          updatePoints(-1);
+        }
         }
       
         clearCell(firstClick); // Clear the first click cell
@@ -73,9 +81,19 @@ document.addEventListener('DOMContentLoaded', function () {
         // Check win condition
         if (checkWinCondition()) {
           // Execute win condition action
-          alert('Congratulations! You found all the words!');
+          stopTimer();
+          document.getElementById('timer').innerText = "Hey, you did it!"
+          updatePoints(getPointsForCompletion());
+          if (points == 120){
+            document.getElementById('timer').innerText = "PERFECT SCORE!"
+          }
         }
       }
+
+      function updatePoints(pointsToAdd) {
+        points += pointsToAdd;
+        document.getElementById('points').innerText = points;
+    }
  
     function getWordFromSelection(start, end) {
         let word = '';
@@ -164,6 +182,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   
     function temporaryHighlight(start, end) {
+      if (isRunning){
         if (start.row === end.row) {
           // Horizontal word
           const row = start.row;
@@ -201,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
             tempHighlightCells.push({ row, col });
           }
         }
+      }
       
         drawGrid(); // Redraw the grid to include the temporary highlights
       
@@ -376,6 +396,7 @@ canvas.addEventListener('mouseleave', handleMouseLeave);
 
 // Function to handle mouse movement over the canvas
 function handleMouseMove(event) {
+  if(isRunning){
   const rect = canvas.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const mouseY = event.clientY - rect.top;
@@ -393,6 +414,7 @@ function handleMouseMove(event) {
   // Draw the hover effect on the hovered cell
   context.fillStyle = 'rgba(0, 255, 0, 0.15)';
   context.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
+}
 }
 
 // Function to handle mouse leaving the canvas
@@ -461,7 +483,99 @@ function clearCanvas() {
     }
     
     // If all words are found, return true
+    clearInterval(timer);
     return true;
   }
+
+
+  let timer;
+  let seconds = 0;
+  let minutes = 0;
+  let isRunning = false;
+  let points = 0;
+
+  function updateTimer() {
+      seconds++;
+      if (seconds === 60) {
+          seconds = 0;
+          minutes++;
+      }
+  
+      let formattedSeconds = seconds < 10 ? `0${seconds}` : seconds;
+      let formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+  
+      document.getElementById('timer').innerText = `${formattedMinutes}:${formattedSeconds}`;
+  }
+  
+  function startTimer() {
+      timer = setInterval(updateTimer, 1000);
+  }
+  
+  function stopTimer() {
+      clearInterval(timer);
+  }
+  
+  function toggleGame() {
+      const startButton = document.getElementById('startButton');
+      
+      if (isRunning) {
+          stopTimer();
+          startButton.innerText = 'Start Game';
+          startButton.classList.remove('btn-danger');
+          startButton.classList.add('btn-success');
+      } else {
+          // Reset the timer
+          seconds = 0;
+          minutes = 0;
+          document.getElementById('timer').innerText = '00:00';
+          startTimer();
+          startButton.innerText = 'Stop Game';
+          startButton.classList.remove('btn-success');
+          startButton.classList.add('btn-danger');
+      }
+      
+      isRunning = !isRunning;
+  }
+  
+  function checkWinCondition() {
+      // Check if all words in the word list have been found
+      for (const word of words) {
+          // Use querySelector to find the list item corresponding to the word
+          const foundWordItem = document.querySelector(`#clue-${word}`);
+          
+          // If the word is not found or the list item does not have the found-word class, return false
+          if (!foundWordItem || !foundWordItem.classList.contains('found-word')) {
+              return false;
+          }
+      }
+      
+      // If all words are found, stop the timer and return true
+      clearInterval(timer);
+      return true;
+  }
+  
+  document.getElementById('startButton').addEventListener('click', toggleGame);
+
+  function getPointsForAttempt() {
+    if (minutes < 1) return 5;
+    if (minutes < 2) return 4;
+    if (minutes < 3) return 3;
+    if (minutes < 4) return 2;
+    return 1;
+}
+
+function getPointsForCompletion() {
+    if (minutes < 1) return 20;
+    if (minutes < 2) return 15;
+    if (minutes < 3) return 10;
+    if (minutes < 4) return 5;
+    return 0;
+}
+
+function updatePoints(pointsToAdd) {
+    points += pointsToAdd;
+    document.getElementById('points').innerText = points;
+}
+
   });
     

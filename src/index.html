@@ -9,14 +9,28 @@
     <div class="container">
         <div class="canvas-wrapper">
           <h1>WORD SEARCHER</h1>
-          <h4>ALL THE FOODS</h4>
+          <div class="row flex-container">
+            <h4>ALL THE FOODS</h4>
+            <h4><strong>POINTS:</strong> <span id="points">0</span></h4>
+        </div>
           <canvas id="gameCanvas" width="480" height="480"></canvas>
+          <div class="justify-content-around d-flex align-items-center">
+            <button class='btn btn-success' id="startButton">Start Game</button>
+            <div id="timer">00:00</div>
+        </div>
+  
         </div>
         <div class="row justify-content-center justify-content-around g-0">
           <div class="col-md-6">
             <div class="list-group" id="wordList">
               <!-- Word list items will be dynamically added here -->
             </div>
+            <br/>
+            <p><strong>SCORING:</strong> Begin the game by pressing 'START GAME'. Five points are awarded for successful word searches for the first minute.</p>
+            <p>After each minute, the amount of points you receive decreases by 1</p>
+            <p>A bonus is awarded at the end of the game! You get 20 points if you beat it in the first minute. However, the bonus decreases by five points each minute.</p>
+            <p><strong>HOW TO PLAY:</strong> If you see a word, select the first letter then the last letter.</p>
+            <p>Careful though, an unsuccessful word search will subtract a point from your score!</p>
           </div>
         </div>
       </div>
