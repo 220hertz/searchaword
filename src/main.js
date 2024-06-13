@@ -524,10 +524,6 @@ function clearCanvas() {
           startButton.classList.remove('btn-danger');
           startButton.classList.add('btn-success');
       } else {
-          // Reset the timer
-          seconds = 0;
-          minutes = 0;
-          document.getElementById('timer').innerText = '00:00';
           startTimer();
           startButton.innerText = 'Stop Game';
           startButton.classList.remove('btn-success');
