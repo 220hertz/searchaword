@@ -1,7 +1,52 @@
 import './styles.scss';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+
 document.addEventListener('DOMContentLoaded', function () {
+
+  let randomWord = ""
+
+  let request1 = new XMLHttpRequest();
+  request1.open('GET', 'https://random-word-api.herokuapp.com/word?length=5', false);
+  request1.send();
+  if (request1.status === 200){
+    let data = JSON.parse(request1.responseText);
+    console.log(data)
+    randomWord = data[0]
+  }
+
+  let title = document.getElementById('game-title');
+  title.textContent = 'WORDS RELATED TO: ' + randomWord.toUpperCase()
+
+
+  let words = [];
+
+    let xhr = new XMLHttpRequest();
+  
+  xhr.open('GET', `https://api.datamuse.com/words?rel_trg=${randomWord}`, false); // `false` makes the request synchronous
+  
+    xhr.send();
+  
+  if (xhr.status === 200) {
+    let data = JSON.parse(xhr.responseText);
+  
+    words = data
+      .filter(word => word.word.length >= 3 && word.word.length <= 8)
+      .slice(0, 16)
+      .map(word => word.word.toUpperCase());
+  
+    console.log('Generated word list:', words);
+    if (words.length < 16) {
+      window.location.reload()
+    }
+  
+ 
+  } else {
+    console.error('XHR request failed with status:', xhr.status);
+  }
+  
+ 
+
     const canvas = document.getElementById('gameCanvas');
     const context = canvas.getContext('2d');
     canvas.style.cursor = 'pointer';
@@ -12,16 +57,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const highlightedCells = []; 
     const selectedCells = []; 
     let tempHighlightCells = []; 
-    
+    let foundWords = [];
   
     
     const board = Array.from({ length: gridSize }, () => Array.from({ length: gridSize }, () => ''));
-    let words = ['rice', 'bread', 'milk', 'cheese', 'apple', 'banana', 'grape', 'olive', 'honey', 'salad', 'juice', 'lemon', 'carrot', 'onion', 'tomato', 'pasta', 'sushi', 'pizza', 'burger', 'fries'];
-
-  
-    
-    words = words.map(word => word.toUpperCase());
-  
+ 
     
     placeWords(board, words);
     fillEmptySquares(board);
@@ -51,44 +91,39 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   
     function attemptSelection() {
-        if (!firstClick || !secondClick) return;
-      
-        const word = getWordFromSelection(firstClick, secondClick);
-      
-        if (words.includes(word)) {
+      if (!firstClick || !secondClick) return;
+    
+      const word = getWordFromSelection(firstClick, secondClick);
+    
+      if (words.includes(word)) {
+        if (!foundWords.includes(word)) { // Check if word has not been found before
           highlightWord(firstClick, secondClick); 
-      
-          
+    
           const foundWordItem = document.querySelector(`#clue-${word}`);
           if (foundWordItem) {
-            foundWordItem.classList.add('found-word')
+            foundWordItem.classList.add('found-word');
             updatePoints(getPointsForAttempt());
           }
-        } else {
-          temporaryHighlight(firstClick, secondClick);
-          if (points === 0){
-          }
-          else{
-          updatePoints(-1);
+    
+          foundWords.push(word); // Add the word to the found words list
         }
-        }
-      
-        clearCell(firstClick); 
-        clearCell(secondClick);
-        firstClick = null;
-        secondClick = null;
-      
-        
-        if (checkWinCondition()) {
-          
-          stopTimer();
-          document.getElementById('timer').innerText = "Hey, you did it!"
-          updatePoints(getPointsForCompletion());
-          if (points == 120){
-            document.getElementById('timer').innerText = "PERFECT SCORE!"
-          }
-        }
+      } else {
+        temporaryHighlight(firstClick, secondClick);
+        updatePoints(-1);
       }
+    
+      clearCell(firstClick);
+      clearCell(secondClick);
+      firstClick = null;
+      secondClick = null;
+    
+      if (checkWinCondition()) {
+        stopTimer();
+        document.getElementById('timer').innerText = "Hey, you did it!";
+        updatePoints(getPointsForCompletion());
+      }
+    }
+    
 
       function updatePoints(pointsToAdd) {
         points += pointsToAdd;
@@ -96,42 +131,66 @@ document.addEventListener('DOMContentLoaded', function () {
     }
  
     function getWordFromSelection(start, end) {
-        let word = '';
-      
-        if (start.row === end.row) {
-          
-          const row = start.row;
-          const startCol = Math.min(start.col, end.col);
-          const endCol = Math.max(start.col, end.col);
-          for (let col = startCol; col <= endCol; col++) {
+      let word = '';
+    
+      if (start.row === end.row) {
+        // Horizontal selection
+        const row = start.row;
+        if (start.col < end.col) {
+          // Left to right
+          for (let col = start.col; col <= end.col; col++) {
             word += board[row][col];
           }
-        } else if (start.col === end.col) {
-          
-          const col = start.col;
-          const startRow = Math.min(start.row, end.row);
-          const endRow = Math.max(start.row, end.row);
-          for (let row = startRow; row <= endRow; row++) {
+        } else {
+          // Right to left
+          for (let col = start.col; col >= end.col; col--) {
             word += board[row][col];
-          }
-        } else if (Math.abs(start.row - end.row) === Math.abs(start.col - end.col)) {
-          
-          const startRow = Math.min(start.row, end.row);
-          const endRow = Math.max(start.row, end.row);
-          const startCol = Math.min(start.col, end.col);
-          const endCol = Math.max(start.col, end.col);
-          for (let i = 0; i <= endRow - startRow; i++) {
-            if (start.row < end.row) {
-              word += board[startRow + i][startCol + i];
-            } else {
-              word += board[endRow - i][startCol + i];
-            }
           }
         }
-      
-        return word;
+      } else if (start.col === end.col) {
+        // Vertical selection
+        const col = start.col;
+        if (start.row < end.row) {
+          // Top to bottom
+          for (let row = start.row; row <= end.row; row++) {
+            word += board[row][col];
+          }
+        } else {
+          // Bottom to top
+          for (let row = start.row; row >= end.row; row--) {
+            word += board[row][col];
+          }
+        }
+      } else if (Math.abs(start.row - end.row) === Math.abs(start.col - end.col)) {
+        // Diagonal selection
+        const steps = Math.abs(start.row - end.row);
+    
+        if (start.row < end.row && start.col < end.col) {
+          // Top-left to bottom-right
+          for (let i = 0; i <= steps; i++) {
+            word += board[start.row + i][start.col + i];
+          }
+        } else if (start.row > end.row && start.col > end.col) {
+          // Bottom-right to top-left (reverse)
+          for (let i = 0; i <= steps; i++) {
+            word += board[start.row - i][start.col - i];
+          }
+        } else if (start.row < end.row && start.col > end.col) {
+          // Top-right to bottom-left (reverse)
+          for (let i = 0; i <= steps; i++) {
+            word += board[start.row + i][start.col - i];
+          }
+        } else if (start.row > end.row && start.col < end.col) {
+          // Bottom-left to top-right
+          for (let i = 0; i <= steps; i++) {
+            word += board[start.row - i][start.col + i];
+          }
+        }
       }
-  
+    
+      return word;
+    }
+    
       function highlightWord(start, end) {
         if (start.row === end.row) {
           
@@ -231,120 +290,210 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 500);
       }
   
-    function placeWords(board, words) {
-      const gridSize = board.length;
-      const wordList = [...words];
-      wordList.sort((a, b) => b.length - a.length);
-  
-      function canPlaceWordHorizontally(word, row, col) {
-        if (col + word.length > gridSize) return false;
-        for (let i = 0; i < word.length; i++) {
-          const cell = board[row][col + i];
-          if (cell !== '' && cell !== word[i]) {
-            return false;
-          }
-        }
-        return true;
-      }
-  
-      function placeWordHorizontally(word, row, col) {
-        for (let i = 0; i < word.length; i++) {
-          board[row][col + i] = word[i];
-        }
-      }
-  
-      function canPlaceWordVertically(word, row, col) {
-        if (row + word.length > gridSize) return false;
-        for (let i = 0; i < word.length; i++) {
-          const cell = board[row + i][col];
-          if (cell !== '' && cell !== word[i]) {
-            return false;
-          }
-        }
-        return true;
-      }
-  
-      function placeWordVertically(word, row, col) {
-        for (let i = 0; i < word.length; i++) {
-          board[row + i][col] = word[i];
-        }
-      }
-  
-      function canPlaceWordDiagonally(word, row, col) {
-        if (row - word.length < -1 || col + word.length > gridSize) return false;
-        for (let i = 0; i < word.length; i++) {
-          const cell = board[row - i][col + i];
-          if (cell !== '' && cell !== word[i]) {
-            return false;
-          }
-        }
-        return true;
-      }
-
-      function canPlaceWordDiagonallyDown(word, row, col) {
-        
-        if (row + word.length > gridSize || col + word.length > gridSize) return false;
+      function placeWords(board, words) {
+        const gridSize = board.length;
+        const wordList = [...words];
+        wordList.sort((a, b) => b.length - a.length);
       
-        
-        for (let i = 0; i < word.length; i++) {
-          const cell = board[row + i][col + i];
-          if (cell !== '' && cell !== word[i]) {
-            return false;
-          }
-        }
-        return true;
-      }
-      
-      function placeWordDiagonally(word, row, col) {
-        for (let i = 0; i < word.length; i++) {
-          board[row - i][col + i] = word[i];
-        }
-      }
-
-      function placeWordDiagonallyDown(word, row, col) {
-        for (let i = 0; i < word.length; i++) {
-          board[row + i][col + i] = word[i];
-        }
-      }
-  
-      for (let word of wordList) {
-        let placed = false;
-        let attempts = 0;
-        const maxAttempts = 10;
-      
-        while (!placed && attempts < maxAttempts) {
-          const row = Math.floor(Math.random() * gridSize);
-          const col = Math.floor(Math.random() * gridSize);
-          const direction = Math.random();
-      
-          if (direction < 0.33) {
-            if (canPlaceWordHorizontally(word, row, col)) {
-              placeWordHorizontally(word, row, col);
-              placed = true;
-            }
-          } else if (direction < 0.66) {
-            if (canPlaceWordVertically(word, row, col)) {
-              placeWordVertically(word, row, col);
-              placed = true;
-            }
-          } else {
-            if (canPlaceWordDiagonallyDown(word, row, col)) {
-              placeWordDiagonallyDown(word, row, col);
-              placed = true;
-            } else if (canPlaceWordDiagonally(word, row, col)) {
-              placeWordDiagonally(word, row, col);
-              placed = true;
+        function canPlaceWordHorizontally(word, row, col) {
+          if (col + word.length > gridSize) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row][col + i];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
             }
           }
+          return true;
+        }
       
-          attempts++;
-          if (attempts === 10) {
-            window.location.reload
+        function placeWordHorizontally(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row][col + i] = word[i];
           }
         }
       
+        function canPlaceWordHorizontallyReverse(word, row, col) {
+          if (col - word.length < -1) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row][col - i];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordHorizontallyReverse(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row][col - i] = word[i];
+          }
+        }
+      
+        function canPlaceWordVertically(word, row, col) {
+          if (row + word.length > gridSize) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row + i][col];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordVertically(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row + i][col] = word[i];
+          }
+        }
+      
+        function canPlaceWordVerticallyReverse(word, row, col) {
+          if (row - word.length < -1) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row - i][col];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordVerticallyReverse(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row - i][col] = word[i];
+          }
+        }
+      
+        function canPlaceWordDiagonally(word, row, col) {
+          if (row - word.length < -1 || col + word.length > gridSize) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row - i][col + i];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordDiagonally(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row - i][col + i] = word[i];
+          }
+        }
+      
+        function canPlaceWordDiagonallyReverse(word, row, col) {
+          if (row + word.length > gridSize || col - word.length < -1) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row + i][col - i];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordDiagonallyReverse(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row + i][col - i] = word[i];
+          }
+        }
+      
+        function canPlaceWordDiagonallyDown(word, row, col) {
+          if (row + word.length > gridSize || col + word.length > gridSize) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row + i][col + i];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordDiagonallyDown(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row + i][col + i] = word[i];
+          }
+        }
+      
+        function canPlaceWordDiagonallyDownReverse(word, row, col) {
+          if (row - word.length < -1 || col - word.length < -1) return false;
+          for (let i = 0; i < word.length; i++) {
+            const cell = board[row - i][col - i];
+            if (cell !== '' && cell !== word[i]) {
+              return false;
+            }
+          }
+          return true;
+        }
+      
+        function placeWordDiagonallyDownReverse(word, row, col) {
+          for (let i = 0; i < word.length; i++) {
+            board[row - i][col - i] = word[i];
+          }
+        }
+      
+        function removeWord(word, positions) {
+          for (const [row, col] of positions) {
+            board[row][col] = '';
+          }
+        }
+      
+        function tryPlaceWord(word) {
+          const directions = [
+            { canPlace: canPlaceWordHorizontally, place: placeWordHorizontally },
+            { canPlace: canPlaceWordHorizontallyReverse, place: placeWordHorizontallyReverse },
+            { canPlace: canPlaceWordVertically, place: placeWordVertically },
+            { canPlace: canPlaceWordVerticallyReverse, place: placeWordVerticallyReverse },
+            { canPlace: canPlaceWordDiagonallyDown, place: placeWordDiagonallyDown },
+            { canPlace: canPlaceWordDiagonallyDownReverse, place: placeWordDiagonallyDownReverse },
+            { canPlace: canPlaceWordDiagonally, place: placeWordDiagonally },
+            { canPlace: canPlaceWordDiagonallyReverse, place: placeWordDiagonallyReverse },
+          ];
+      
+          directions.sort(() => Math.random() - 0.5); // Randomize directions
+      
+          for (const { canPlace, place } of directions) {
+            for (let attempts = 0; attempts < 10; attempts++) {
+              const row = Math.floor(Math.random() * gridSize);
+              const col = Math.floor(Math.random() * gridSize);
+              if (canPlace(word, row, col)) {
+                const positions = [];
+                for (let i = 0; i < word.length; i++) {
+                  if (canPlace === canPlaceWordHorizontally || canPlace === canPlaceWordHorizontallyReverse) {
+                    positions.push([row, col + (canPlace === canPlaceWordHorizontally ? i : -i)]);
+                  } else if (canPlace === canPlaceWordVertically || canPlace === canPlaceWordVerticallyReverse) {
+                    positions.push([row + (canPlace === canPlaceWordVertically ? i : -i), col]);
+                  } else if (canPlace === canPlaceWordDiagonallyDown || canPlace === canPlaceWordDiagonallyDownReverse) {
+                    positions.push([row + (canPlace === canPlaceWordDiagonallyDown ? i : -i), col + (canPlace === canPlaceWordDiagonallyDown ? i : -i)]);
+                  } else {
+                    positions.push([row + (canPlace === canPlaceWordDiagonally ? -i : i), col + (canPlace === canPlaceWordDiagonally ? i : -i)]);
+                  }
+                }
+                place(word, row, col);
+                return positions;
+              }
+            }
+          }
+          return null;
+        }
+      
+        function backtracking(index) {
+          if (index === wordList.length) {
+            return true;
+          }
+          const word = wordList[index];
+          const positions = tryPlaceWord(word);
+          if (positions) {
+            if (backtracking(index + 1)) {
+              return true;
+            }
+            removeWord(word, positions);
+          }
+          return false;
+        }
+      
+        backtracking(0);
       }
-    }
+      
   
     function fillEmptySquares(board) {
       const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -360,8 +509,8 @@ document.addEventListener('DOMContentLoaded', function () {
   
     function drawGrid() {
       context.clearRect(0, 0, canvas.width, canvas.height); 
-      context.strokeStyle = '#fff';
-      context.fillStyle = '#fff'; 
+      context.strokeStyle = '#000';
+      context.fillStyle = '#000'; 
       context.fillRect(0, 0, canvas.width, canvas.height); 
       context.font = 'bold 20px Arial';
       context.textAlign = 'center';
@@ -391,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function () {
           const x = col * cellSize + cellSize / 2;
           const y = row * cellSize + cellSize / 2;
   
-          context.fillStyle = '#000'; 
+          context.fillStyle = '#fff'; 
           context.fillText(letter, x, y);
         }
       }
@@ -581,19 +730,19 @@ function clearCanvas() {
   document.getElementById('startButton').addEventListener('click', toggleGame);
 
   function getPointsForAttempt() {
-    if (minutes < 1) return 5;
-    if (minutes < 2) return 4;
+    if (minutes < 1) return 10;
+    if (minutes < 2) return 5;
     if (minutes < 3) return 3;
     if (minutes < 4) return 2;
     return 1;
 }
 
 function getPointsForCompletion() {
-    if (minutes < 1) return 20;
-    if (minutes < 2) return 15;
+    if (minutes < 1) return 50;
+    if (minutes < 2) return 25;
     if (minutes < 3) return 10;
     if (minutes < 4) return 5;
-    return 0;
+    return 5;
 }
 
 function updatePoints(pointsToAdd) {

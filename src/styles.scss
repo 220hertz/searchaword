@@ -1,11 +1,21 @@
-$primary-color: #fff;
+$primary-color: #000;
 
 body {
   background-color: $primary-color;
   font-family: Arial, sans-serif;
   margin:0px;
   padding:0px;
+  background: #000
   
+}
+
+p, h4, h1 {
+  color:#fff
+}
+
+.list-group-item{
+  background-color:#000 !important;
+  color:#fff !important
 }
 
 .canvas-wrapper {
