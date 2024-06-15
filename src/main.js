@@ -158,28 +158,32 @@ document.addEventListener('DOMContentLoaded', async function () {
   canvas.addEventListener('mouseleave', handleMouseLeave);
   document.getElementById('startButton').addEventListener('click', toggleGame);
 
-// Fetch the first definition for a word
-async function fetchDefinitions(word) {
-  try {
-    const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+  async function fetchDefinitions(word) {
+    try {
+      const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+  
+      if (Array.isArray(data) && data.length > 0) {
+        const definitions = [];
+        // Loop through all meanings and their definitions
+        data[0].meanings.forEach(meaning => {
+          meaning.definitions.forEach(definition => {
+            definitions.push(definition.definition);
+          });
+        });
+  
+        return definitions.length > 0 ? definitions : [`No definitions found for this word, so it's a gimme: ${word}`];
+      } else {
+        return [`No definitions found for this word, so it's a gimme: ${word}`];
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return [`No definition found for this word, so it's a gimme: ${word}`];
     }
-    const data = await response.json();
-    
-    if (Array.isArray(data) && data.length > 0) {
-      // Get the first definition
-      const firstDefinition = data[0].meanings[0].definitions[0].definition;
-      return firstDefinition;
-    } else {
-      return `No definition found for this word, so it's a gimme: ${word}`;
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return `No definition found for this word, so it's a gimme: ${word}`;
   }
-}
-
 // Render the word list with longest definitions as an ordered list
 async function renderWordListWithDefinitions(definitions) {
   const wordListContainer = document.getElementById('wordList');
@@ -193,7 +197,7 @@ async function renderWordListWithDefinitions(definitions) {
   wordListContainer.appendChild(ol);
 
   for (let word of Object.keys(definitions)) {
-    const definition = definitions[word]; // Get longest definition for each word
+    const definitionList = definitions[word]; // Get all definitions for each word
 
     const li = document.createElement('li');
     li.style.border = "none";
@@ -203,19 +207,27 @@ async function renderWordListWithDefinitions(definitions) {
     const contentElement = document.createElement('span');
     contentElement.dataset.word = word; // Store the word in a data attribute
 
+    // Create a nested unordered list for definitions
+    const ul = document.createElement('ul');
+    definitionList.forEach(definition => {
+      const defLi = document.createElement('li');
+      defLi.textContent = definition;
+      ul.appendChild(defLi);
+    });
+
     // Initially show the definition
-    contentElement.textContent = `${definition}`;
+    contentElement.appendChild(ul);
 
     // Event listener to reveal the word on click
     const revealWord = () => {
-      if(isRunning){
-      contentElement.textContent = `${word}: Five points deducted for getting a hint!`; // Show the word
-      li.removeEventListener('click', revealWord); // Remove the event listener
+      if (isRunning) {
+        contentElement.textContent = `${word}: Five points deducted for getting a hint!`; // Show the word
+        li.removeEventListener('click', revealWord); // Remove the event listener
 
-      // Deduct points and update display
-      updatePoints(-5);
-      console.log('Lost 5 points for using a hint');
-    }
+        // Deduct points and update display
+        updatePoints(-5);
+        console.log('Lost 5 points for using a hint');
+      }
     };
 
     // Attach event listener to the list item
@@ -225,6 +237,7 @@ async function renderWordListWithDefinitions(definitions) {
     ol.appendChild(li);
   }
 }
+
   // Handle canvas click event
   function handleClick(event) {
     if (isRunning) {
