@@ -14,10 +14,21 @@ p, h4, h1 {
 }
 
 .list-group-item{
+  cursor:pointer;
   background-color:#000 !important;
   color:#fff !important
 }
+  li:hover {
+  background-color:#458f4b
+}
 
+    ol {
+      list-style-type: decimal; /* Ensure ordered list numbering */
+      padding-left: 40px; /* Add padding to ensure numbers are visible */
+    }
+    .list-group li {
+      margin: 5px 0; /* Add margin for better spacing between items */
+    }
 .canvas-wrapper {
     margin:auto;
     max-width:540px;

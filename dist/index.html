@@ -6,32 +6,35 @@
     <title>Lexicon</title>
 <script defer src="/bundle.js"></script></head>
 <body style="background-color:#000">
-    <div class="container">
-      <link rel="icon" href="/favicon.ico" type="image/x-icon">
-        <div class="canvas-wrapper">
-          <h1 style="color:#fff">WORD SEARCHER</h1>
+  <div class="container">
+      <div class="canvas-wrapper">
+          <h1 style="color:#fff">LEXICON</h1>
           <div class="row flex-container">
-            <h4 id="game-title" style="color:#fff"></h4>
-            <h4 style="color:#fff"><strong>POINTS:</strong> <span id="points">0</span></h4>
-        </div>
-          <canvas id="gameCanvas" width="480" height="480"></canvas>
-          <div class="justify-content-around d-flex align-items-center">
-            <button class='btn btn-success' id="startButton">Start Game</button>
-            <div style="color:#fff" id="timer">00:00</div>
-        </div>
-  
-        </div>
-        <div class="row justify-content-center justify-content-around g-0">
-          <div class="col-md-6">
-            <div class="list-group" style="color:#fff;background-color:#000" id="wordList">
-              <!-- Word list items will be dynamically added here -->
-            </div>
-            <br/>
-            <p><strong>HOW TO PLAY:</strong> Begin the game by pressing 'START GAME'. To attempt a word search, click or tap the first letter of the word, then the last letter.</p>
-            <p><strong>SCORING:</strong>Words searched in the first minute of play yield 10 points each. That decreases to 5 in the second minute, 3 in the third, 2 in the fourth and 1 every minute thereafter. A bonus of 50 points is awarded for completing the puzzle in the first minute, 25 in the second, 10 in the third and five thereafter.</p>
-            <p>Careful though, an unsuccessful word search will subtract a point from your score!</p>
+              <h4 id="game-title" style="color:#fff"></h4>
+              <h4 style="color:#fff"><strong>POINTS:</strong> <span id="points">0</span></h4>
           </div>
-        </div>
+          <canvas id="gameCanvas" width="480" height="480"></canvas>
+          <div class="row justify-content-around d-flex align-items-center">
+              <button class='btn btn-success' id="startButton">Start Game</button>
+              <div style="color:#fff" id="timer">00:00</div>
+          </div>
       </div>
+
+      <div class="row justify-content-center g-0">
+          <div class="col-md-6">
+              <div id="instructions">
+                  <p><strong>HOW TO PLAY:</strong> Begin the game by pressing 'START GAME'. To attempt a word search, click or tap the first letter of the word, then the last letter.</p>
+                  <p><strong>SCORING:</strong> Words searched in the first minute of play yield 10 points each. That decreases to 5 in the second minute, 3 in the third, 2 in the fourth and 1 every minute thereafter. A bonus of 50 points is awarded for completing the puzzle in the first minute, 25 in the second, 10 in the third and five thereafter.</p>
+                  <p>Careful though, an unsuccessful word search will subtract a point from your score!</p>
+                  <p><strong>HINTS:</strong> You may click on any of the clues to get a hint, but that will also subtract five points from your score!</p>
+              </div>
+          </div>
+          <div class="col-md-6">
+              <div id="wordList" style="color:#fff;background-color:#000">
+                  <!-- Word list items will be dynamically added here -->
+              </div>
+          </div>
+      </div>
+  </div>
 </body>
 </html>
