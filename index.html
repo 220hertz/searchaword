@@ -29,12 +29,17 @@
             <p>Careful though, an unsuccessful word search will subtract a point from your score!</p>
           <p><strong>HINTS:</strong> You may click on any of the clues to get a the actual word you're looking for, but that will also subtract five points from your score!</p>
           <p>The game must be running (i.e., the timer must be ticking) for you to interact with hints or the board!</p>
-          <p><strong>HOW THIS ALL WORKS: </strong>Every time this page is refreshed, I try to to rebuild a random puzzle from scratch. There are various factors that might prevent the puzzle from being generated correctly, and I'm working on that.</p>
+          <p><strong>HOW THIS ALL WORKS: </strong>Every time this page is refreshed, I try to rebuild a random puzzle from scratch. Like, even if the clues you receive are the same, the solutions may be in a different place on the board. Totally randomized. There are various factors that might prevent the puzzle from being generated correctly, and I'm working on that.</p>
           <p>For instance:</p>
           <p>
             <p>When I try to place all of the puzzle's solution words and the algorithm that does that finds that it is impossible to do so, that's a problem. When that happens you will see a game board without a solution to all of the clue words.</p>
             <p>I make calls to external services, one for the <a href="https://www.datamuse.com/">word list</a> and one for the <a href="https://dictionaryapi.dev/">definitions</a>, and I can't control what kind of response they will return. Generally, they're pretty good. However, they may return a 429 to indicate they've gotten too many requests from time to time. You won't see that in your browser. But maybe count to 10 and then refresh.</P>
             </ul>
+            <h4>If you know how to inspect your browser console: (Try F12 first)</h4>
+            <p><strong>Safari: </strong>Option + Command + C</p>
+            <p><strong>Chrome: </strong>Shift + ctrl + J (windows); Option + Command + J (Mac)</p>
+            <p><strong>Firefox: </strong>Shift + ctrl + J (windows); Shift + Command + J (Mac)</p>
+            <p><strong>Edge...</strong>CTRL + Shift + I. Note: this hotkey works on several different browsers, so if nothing's working in Chrome, Firefox or Safari, give it a try.</p>
         </div>
         <h4 style="color:#fff">The Wordlist!</h4>
             <div style="color:#fff;background-color:#000" id="wordList">
