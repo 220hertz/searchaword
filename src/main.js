@@ -839,4 +839,5 @@ async function renderWordListWithDefinitions(definitions) {
     if (minutes < 4) return 5;
     return 5;
   }
+  console.log(words)
 });
